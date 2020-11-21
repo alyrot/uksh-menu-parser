@@ -11,10 +11,14 @@ import (
 	"math"
 	"os"
 	"os/exec"
+	"regexp"
+	"strconv"
 	"strings"
+	"time"
 	"unicode"
 
 	"github.com/disintegration/imaging"
+	"github.com/snabb/isoweek"
 )
 
 type Dish struct {
@@ -23,6 +27,7 @@ type Dish struct {
 	Price       string
 	Kcal        string
 	Type        string
+	Date        time.Time
 	colID       int
 	rowID       int
 }
@@ -303,10 +308,38 @@ textToDish takes the output of pdftotext and parses it into dishes.
 Cannot obtain price information
 */
 func textToDish(text []byte) ([]*Dish, error) {
+	return textToDishInYear(text, time.Now().In(time.Local).Year())
+}
+
+/*
+textToDish takes the output of pdftotext and parses it into dishes.
+The iso week is interpreted for year
+Cannot obtain price information
+*/
+func textToDishInYear(text []byte, year int) ([]*Dish, error) {
 
 	lines := strings.Split(string(text), "\n")
 	if count := len(lines); count <= 3 {
 		return nil, fmt.Errorf("textToDish: input has not enough lines\n")
+	}
+
+	isoWeekRegexp := regexp.MustCompile("[0-9]{1,2}")
+	anchorDate := time.Time{}
+	for i := range lines {
+		if strings.HasPrefix(strings.Trim(lines[i], " "), "Speiseplan Bistro") {
+			weekNrBytes := isoWeekRegexp.Find([]byte(lines[i]))
+			if weekNrBytes == nil {
+				return nil, fmt.Errorf("textToDish: parsing error: failed to locate week number")
+			}
+			weekNr, err := strconv.ParseInt(string(weekNrBytes), 10, 32)
+			if err != nil {
+				return nil, fmt.Errorf("textToDish: parsing error: failed to parse %s to week number: %v", weekNrBytes, err)
+			}
+			anchorDate = isoweek.StartTime(year, int(weekNr), time.Local)
+		}
+	}
+	if anchorDate.Equal(time.Time{}) {
+		return nil, fmt.Errorf("textToDish: parsing error: failed to locate week number")
 	}
 
 	//find Wochentag line or exit
@@ -398,6 +431,7 @@ func textToDish(text []byte) ([]*Dish, error) {
 					v.Type = columns[colID].name
 					v.rowID = rowID
 					v.colID = colID
+					v.Date = anchorDate.AddDate(0, 0, rowID)
 					dishes = append(dishes, v)
 				}
 			}
@@ -416,6 +450,14 @@ mergeTextAndOCR, contains the information with textToDish with the price informa
 the OCR analysis
 */
 func PDFToDishes(pdf []byte) ([]*Dish, error) {
+	return PDFToDishesInYear(pdf, time.Now().In(time.Local).Year())
+}
+
+/*
+mergeTextAndOCR, contains the information with textToDish with the price information from
+the OCR analysis
+*/
+func PDFToDishesInYear(pdf []byte, year int) ([]*Dish, error) {
 
 	text, err := PDFToText(pdf)
 	if err != nil {
@@ -449,7 +491,7 @@ func PDFToDishes(pdf []byte) ([]*Dish, error) {
 		rowColPrice[tiles[i].rowID][tiles[i].colID] = d.Price
 	}
 
-	dishes, err := textToDish(text)
+	dishes, err := textToDishInYear(text, year)
 	if err != nil {
 		return nil, fmt.Errorf("mergeTextAndOCR: %v", err)
 	}

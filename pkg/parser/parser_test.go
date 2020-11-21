@@ -6,6 +6,7 @@ import (
 	"os"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/disintegration/imaging"
 )
@@ -140,6 +141,7 @@ dishEqual, is a helper for TestTextToDish that checks if two dishes are equal
 */
 func dishEqual(a, b *Dish, includingPrice bool) bool {
 	res := a.Type == b.Type && a.Description == b.Description && a.Kcal == b.Kcal && a.rowID == b.rowID && a.colID == b.colID
+	res = res && a.Date.Year() == b.Date.Year() && a.Date.Month() == b.Date.Month() && a.Date.Day() == b.Date.Day()
 	return res && (!includingPrice || (a.Price == b.Price))
 
 }
@@ -160,6 +162,7 @@ var sampleDishes = []*dishTest{
 			Price:       "€ 4,80 / € 6,00",
 			Kcal:        "kcal 528 / kJ 2212",
 			Type:        "Wok Station",
+			Date:        time.Date(2020, 11, 16, 0, 0, 0, 0, time.Local),
 			colID:       0,
 			rowID:       0,
 		},
@@ -171,8 +174,9 @@ var sampleDishes = []*dishTest{
 			Price:       "€ 5,90 / € 7,38",
 			Kcal:        "kcal 879 / kJ 3683",
 			Type:        "Gericht 2",
+			Date:        time.Date(2020, 11, 22, 0, 0, 0, 0, time.Local),
 			colID:       2,
-			rowID:       1,
+			rowID:       6,
 		},
 	},
 	{
@@ -182,6 +186,7 @@ var sampleDishes = []*dishTest{
 			Price:       "€ 4,90 / € 6,13",
 			Kcal:        "kcal 429 / kJ 1797",
 			Type:        "Gericht 3",
+			Date:        time.Date(2020, 11, 18, 0, 0, 0, 0, time.Local),
 			colID:       3,
 			rowID:       2,
 		},
@@ -197,7 +202,7 @@ func TestPDFToDishes(t *testing.T) {
 		t.Fatalf("failed to open test input %v: %v\n", path, err)
 	}
 
-	dishes, err := PDFToDishes(pdfBytes)
+	dishes, err := PDFToDishesInYear(pdfBytes, 2020)
 	if err != nil {
 		t.Errorf("Unexpected error: %v\n", err)
 		t.FailNow()
@@ -227,7 +232,7 @@ func TestTextToDish(t *testing.T) {
 		t.Fatalf("failed to open test input %v: %v\n", path, err)
 	}
 
-	dishes, err := textToDish(text)
+	dishes, err := textToDishInYear(text, 2020)
 	if err != nil {
 		t.Fatalf("Unexpected error: %v\n", err)
 	}
