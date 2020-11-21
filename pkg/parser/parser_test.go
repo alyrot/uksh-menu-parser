@@ -138,8 +138,83 @@ func TestTileToDish(t *testing.T) {
 /*
 dishEqual, is a helper for TestTextToDish that checks if two dishes are equal
 */
-func dishEqual(a, b *Dish) bool {
-	return a.Type == b.Type && a.Description == b.Description && a.Kcal == b.Kcal && a.rowID == b.rowID && a.colID == b.colID
+func dishEqual(a, b *Dish, includingPrice bool) bool {
+	res := a.Type == b.Type && a.Description == b.Description && a.Kcal == b.Kcal && a.rowID == b.rowID && a.colID == b.colID
+	return res && (!includingPrice || (a.Price == b.Price))
+
+}
+
+type dishTest struct {
+	d     *Dish
+	found bool
+}
+
+/*
+Common test data for PDFToDishes and textToDish
+*/
+var sampleDishes = []*dishTest{
+	{
+		d: &Dish{
+			Title:       "Pasta-Pfanne",
+			Description: "mit Hähnchenfleisch",
+			Price:       "€ 4,80 / € 6,00",
+			Kcal:        "kcal 528 / kJ 2212",
+			Type:        "Wok Station",
+			colID:       0,
+			rowID:       0,
+		},
+	},
+	{
+		d: &Dish{
+			Title:       "Rumpsteak",
+			Description: "Champignon-Zwiebelgemüse, Bratkartoffeln und Kräuterbutter",
+			Price:       "€ 5,90 / € 7,38",
+			Kcal:        "kcal 879 / kJ 3683",
+			Type:        "Gericht 2",
+			colID:       2,
+			rowID:       1,
+		},
+	},
+	{
+		d: &Dish{
+			Title:       "gebratenes Kabeljaufilet",
+			Description: "mit Rahmwirsing, und Petersilienkartoffeln",
+			Price:       "€ 4,90 / € 6,13",
+			Kcal:        "kcal 429 / kJ 1797",
+			Type:        "Gericht 3",
+			colID:       3,
+			rowID:       2,
+		},
+	},
+}
+
+func TestPDFToDishes(t *testing.T) {
+	t.Parallel()
+
+	path := "../../testFiles/planKW47.pdf"
+	pdfBytes, err := ioutil.ReadFile(path)
+	if err != nil {
+		t.Fatalf("failed to open test input %v: %v\n", path, err)
+	}
+
+	dishes, err := PDFToDishes(pdfBytes)
+	if err != nil {
+		t.Errorf("Unexpected error: %v\n", err)
+		t.FailNow()
+	}
+	for i := range dishes {
+		for j := range sampleDishes {
+			if dishEqual(sampleDishes[j].d, dishes[i], true) {
+				sampleDishes[j].found = true
+			}
+		}
+	}
+
+	for j := range sampleDishes {
+		if !sampleDishes[j].found {
+			t.Errorf("Did not find dish %v in output\n", *sampleDishes[j].d)
+		}
+	}
 
 }
 
@@ -161,50 +236,9 @@ func TestTextToDish(t *testing.T) {
 		t.Fatalf("Unexpected empty result\n")
 	}
 
-	type dishTest struct {
-		d     *Dish
-		found bool
-	}
-
-	sampleDishes := []*dishTest{
-		{
-			d: &Dish{
-				Title:       "Pasta-Pfanne",
-				Description: "mit Hähnchenfleisch",
-				Price:       "",
-				Kcal:        "kcal 528 / kJ 2212",
-				Type:        "Wok Station",
-				colID:       0,
-				rowID:       0,
-			},
-		},
-		{
-			d: &Dish{
-				Title:       "Rumpsteak",
-				Description: "Champignon-Zwiebelgemüse, Bratkartoffeln und Kräuterbutter",
-				Price:       "",
-				Kcal:        "kcal 879 / kJ 3683",
-				Type:        "Gericht 2",
-				colID:       2,
-				rowID:       1,
-			},
-		},
-		{
-			d: &Dish{
-				Title:       "gebratenes Kabeljaufilet",
-				Description: "mit Rahmwirsing, und Petersilienkartoffeln",
-				Price:       "",
-				Kcal:        "kcal 429 / kJ 1797",
-				Type:        "Gericht 3",
-				colID:       3,
-				rowID:       2,
-			},
-		},
-	}
-
 	for i := range dishes {
 		for j := range sampleDishes {
-			if dishEqual(sampleDishes[j].d, dishes[i]) {
+			if dishEqual(sampleDishes[j].d, dishes[i], false) {
 				sampleDishes[j].found = true
 			}
 		}

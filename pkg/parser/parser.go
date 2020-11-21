@@ -203,8 +203,6 @@ func parseDish(text string) (*Dish, error) {
 }
 
 func TileToDish(tile []byte) (*Dish, error) {
-	//buf := new(bytes.Buffer)
-	//png.Encode(buf,tile)
 	text, err := OCRImage(tile)
 	if err != nil {
 		return nil, fmt.Errorf("OCRImage: %v", err)
@@ -238,12 +236,6 @@ func matchToColumn(index int, columns []*column) *column {
 		if math.Abs(float64(index-columns[i].offset)) <= math.Abs(float64(index-columns[i+1].offset)) {
 			return columns[i]
 		}
-		/*
-			if columns[i].offset >= index {
-				return columns[i]
-			}
-
-		*/
 	}
 
 	return columns[len(columns)-1]
@@ -280,12 +272,12 @@ func splitAfterXWhitespaces(l string, maxWhiteSpaces int) []*token {
 					})
 					colStart = -1
 				}
-			} else {
+			} else { //reset white space counter on on whitespace char
 				whiteSpaces = 0
 			}
 		}
 	}
-	//handle last token
+	//handle dangling token
 	if colStart != -1 {
 		res = append(res, &token{colStart, strings.Trim(l[colStart:], " \n")})
 	}
@@ -313,7 +305,7 @@ Cannot obtain price information
 func textToDish(text []byte) ([]*Dish, error) {
 
 	lines := strings.Split(string(text), "\n")
-	if count := len(lines); count <= 10 {
+	if count := len(lines); count <= 3 {
 		return nil, fmt.Errorf("textToDish: input has not enough lines\n")
 	}
 
@@ -346,7 +338,7 @@ func textToDish(text []byte) ([]*Dish, error) {
 	lastKcalLine := lineWochentag
 	const kcal = "kcal"
 	rowID := 0
-	for i := range lines {
+	for i := lineWochentag + 1; i < len(lines); i++ {
 		if strings.Contains(lines[i], kcal) {
 			startLine := lastKcalLine + 1
 			kcalLine := i
@@ -361,9 +353,6 @@ func textToDish(text []byte) ([]*Dish, error) {
 				}
 			}
 			nutritionalValue := splitAfterXWhitespaces(lines[kcalLine], 3)
-			if len(titles) != len(nutritionalValue) {
-				return nil, fmt.Errorf("textToDish: parsing error: %v titles put only %v kcal statements\n", len(titles), len(nutritionalValue))
-			}
 
 			//maps coldID to Dish if it exists
 			tmp := make(map[int]*Dish)
