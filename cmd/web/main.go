@@ -22,7 +22,9 @@ const (
 		ENV_USE_SSL, control whether ssl should be used. If set to "true" we expect a "cert.pem" and a "privkey.pem"
 		file in the "private" subfolder
 	*/
-	ENV_USE_SSL = "USE_SSL"
+	ENV_USE_SSL          = "USE_SSL"
+	ENV_SSL_CERT_PATH    = "SSL_CERT_PATH"
+	ENV_SSL_PRIVKEY_PATH = "SSL_PRIVKEY_PATH"
 )
 
 type application struct {
@@ -104,7 +106,7 @@ func main() {
 	}
 	infoLog.Printf("Starting server on %s", addr)
 	if os.Getenv(ENV_USE_SSL) == "true" {
-		err = srv.ServeTLS(listener, "../../private/ssl/cert.pem", "../../private/ssl/privkey.pem")
+		err = srv.ServeTLS(listener, os.Getenv(ENV_SSL_CERT_PATH), os.Getenv(ENV_SSL_PRIVKEY_PATH))
 	} else {
 		err = srv.Serve(listener)
 	}
