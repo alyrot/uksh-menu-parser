@@ -32,6 +32,16 @@ type Dish struct {
 	rowID       int
 }
 
+type UKSHParserI interface {
+	PDFToDishes(pdf []byte) ([]*Dish, error)
+}
+
+type UKSHParser struct{}
+
+func (p *UKSHParser) PDFToDishes(pdf []byte) ([]*Dish, error) {
+	return PDFToDishes(pdf)
+}
+
 func (d Dish) String() string {
 	return fmt.Sprintf("Type: %v Title=%v Description=%v Price=%v Kcal=%v\n", d.Type, d.Title, d.Description, d.Price, d.Kcal)
 }
