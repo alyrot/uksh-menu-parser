@@ -3,3 +3,4 @@ testFiles/testOut
 /testFiles/planKW47.png
 mocks
 cmd/web/web
+vendor

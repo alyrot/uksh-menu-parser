@@ -14,7 +14,15 @@ import (
 )
 
 const (
+	/*
+		ENV_SERVER_LISTEN, configures where the server should listen. E.g. use :80 to listen on port 80 on all interfaces
+	*/
 	ENV_SERVER_LISTEN = "SERVER_LISTEN"
+	/*
+		ENV_USE_SSL, control whether ssl should be used. If set to "true" we expect a "cert.pem" and a "privkey.pem"
+		file in the "private" subfolder
+	*/
+	ENV_USE_SSL = "USE_SSL"
 )
 
 type application struct {
@@ -95,8 +103,11 @@ func main() {
 		app.errorLog.Fatalf("Failed to listen on tcp4 %v: %v\n", addr, err)
 	}
 	infoLog.Printf("Starting server on %s", addr)
-	//err = srv.ServeTLS(listener, "../../private/ssl/cert.pem", "../../private/ssl/privkey.pem")
-	err = srv.Serve(listener)
+	if os.Getenv(ENV_USE_SSL) == "true" {
+		err = srv.ServeTLS(listener, "../../private/ssl/cert.pem", "../../private/ssl/privkey.pem")
+	} else {
+		err = srv.Serve(listener)
+	}
 	if err != nil && err != http.ErrServerClosed {
 		errorLog.Fatal(err)
 	}
