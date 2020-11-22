@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"sync"
 	"time"
 
 	"github.com/go-co-op/gocron"
@@ -74,9 +75,19 @@ func main() {
 	}
 	terminate := make(chan os.Signal, 1)
 	signal.Notify(terminate, os.Interrupt)
+	signal.Notify(terminate, os.Kill)
+	var wg sync.WaitGroup
+	wg.Add(1)
 	go func() {
+		defer wg.Done()
 		<-terminate
-		srv.Shutdown(context.TODO())
+		app.infoLog.Printf("Got terminate signal")
+		shutdownCtx, _ := context.WithDeadline(context.Background(), time.Now().Add(30*time.Second))
+		if err := srv.Shutdown(shutdownCtx); err != nil {
+			app.errorLog.Printf("Clean shutdown failed: %v\n", err)
+		} else {
+			app.infoLog.Printf("Clean Shutdown done\n")
+		}
 	}()
 
 	listener, err := net.Listen("tcp4", addr)
@@ -89,4 +100,5 @@ func main() {
 	if err != nil && err != http.ErrServerClosed {
 		errorLog.Fatal(err)
 	}
+	wg.Wait()
 }
