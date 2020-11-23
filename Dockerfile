@@ -25,7 +25,7 @@ ENV GOPATH=/root/go/
 ADD . /usr/local/go/src/github.com/alyrot/menuToText
 WORKDIR /usr/local/go/src/github.com/alyrot/menuToText
 RUN ["go", "mod", "download"]
-RUN ["go", "mod", "vendor"]
+#RUN ["go", "mod", "vendor"]
 RUN ["go", "get", "github.com/golang/mock/mockgen@v1.4.4"]
 RUN ["./buildMock.sh"]
 RUN ["go", "test", "./..."]
