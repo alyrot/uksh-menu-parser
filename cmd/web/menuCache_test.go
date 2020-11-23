@@ -114,7 +114,7 @@ func TestMenuCache_GetMenu(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	parseMock := parserMock.NewMockUKSHParser(ctrl)
+	parseMock := parserMock.NewMockUKSHParserI(ctrl)
 	parseMock.EXPECT().PDFToDishes(mockPDFs[0]).Return(uncachedDishes, nil)
 	parseMock.EXPECT().PDFToDishes(mockPDFs[1]).Return([]*parser.Dish{}, nil)
 

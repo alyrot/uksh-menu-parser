@@ -92,7 +92,8 @@ func main() {
 		defer wg.Done()
 		<-terminate
 		app.infoLog.Printf("Got terminate signal")
-		shutdownCtx, _ := context.WithDeadline(context.Background(), time.Now().Add(30*time.Second))
+		shutdownCtx, cancel := context.WithDeadline(context.Background(), time.Now().Add(30*time.Second))
+		defer cancel()
 		if err := srv.Shutdown(shutdownCtx); err != nil {
 			app.errorLog.Printf("Clean shutdown failed: %v\n", err)
 		} else {
