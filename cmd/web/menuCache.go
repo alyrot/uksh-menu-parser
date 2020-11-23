@@ -1,5 +1,7 @@
 package main
 
+//go:generate mockgen -source menuCache.go -destination ../../mocks/cmd/web/menuCache.go
+
 import (
 	"errors"
 	"fmt"
@@ -10,7 +12,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/alyrot/menuToText/pkg/parser"
+	"github.com/alyrot/uksh-menu-parser/pkg/parser"
 )
 
 /*

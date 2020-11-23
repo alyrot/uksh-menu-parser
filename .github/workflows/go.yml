@@ -24,15 +24,15 @@ jobs:
     - name: Get dependencies
       run: |
         go get -v -t -d ./...
-        go get github.com/golang/mock/mockgen@v1.4.4
         if [ -f Gopkg.toml ]; then
             curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh
             dep ensure
         fi
-        ./buildMock.sh
+        sudo apt-get update
+        sudo apt-get install -y tesseract-ocr tesseract-ocr-deu poppler-utils
 
     - name: Build
-      run: go build -v .
+      run: go build -v ./...
 
     - name: Test
-      run: go test -v .
+      run: go test -v ./...

@@ -99,8 +99,14 @@ func TestUkshMenuToTiles(t *testing.T) {
 		t.Errorf("Unepexted number of results, wanted 28 got %v\n", len(tiles))
 	}
 
-	//write out for manual inspection
 	baseOutPath := "../../testFiles/testOut"
+	//write out for manual inspection
+	if _, err := os.Stat(baseOutPath); os.IsNotExist(err) {
+		if err := os.Mkdir(baseOutPath, os.ModePerm); err != nil {
+			t.Fatalf("Failed to create dir %v : %v", baseOutPath, err)
+
+		}
+	}
 	for i := range tiles {
 		outPath := fmt.Sprintf("%v/tile-%02d", baseOutPath, i)
 		outFile, err := os.Create(outPath)

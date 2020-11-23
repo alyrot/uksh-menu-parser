@@ -1,5 +1,7 @@
 package parser
 
+//go:generate mockgen -source parser.go -destination ../../mocks/pkg/parser/parser.go
+
 import (
 	"bytes"
 	"fmt"

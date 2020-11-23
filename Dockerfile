@@ -3,36 +3,30 @@ FROM ubuntu:rolling
 ENV TZ=Europe/Berlin
 ENV ZONEINFO=/zoneinfo.zip
 
-#go specific env
-
-
-
 #app specific env
 ENV SERVER_LISTEN=:80
 
 #our app uses these cli utilities
-RUN apt-get update && apt-get install -y tesseract-ocr tesseract-ocr-deu poppler-utils ca-certificates wget build-essential
+RUN apt-get update && apt-get install -y tesseract-ocr tesseract-ocr-deu poppler-utils ca-certificates wget build-essential git
 
 #install specific go version
 RUN ["wget", "https://golang.org/dl/go1.15.5.linux-amd64.tar.gz"]
 RUN ["tar", "-C", "/usr/local", "-xzf", "go1.15.5.linux-amd64.tar.gz"]
-ENV PATH="${PATH}:/usr/local/go/bin"
 ENV GOPATH=/root/go/
+ENV GOROOT=/usr/local/go
+ENV GO111MODULE=on
+ENV PATH="${PATH}:/usr/local/go/bin:$GOPATH/bin"
 
 
 
 #build our app
-ADD . /usr/local/go/src/github.com/alyrot/menuToText
-WORKDIR /usr/local/go/src/github.com/alyrot/menuToText
-RUN ["go", "mod", "download"]
-RUN ["go", "mod", "vendor"]
-RUN ["go", "get", "github.com/golang/mock/mockgen@v1.4.4"]
-RUN ["./buildMock.sh"]
-RUN ["go", "test", "./..."]
-WORKDIR /usr/local/go/src/github.com/alyrot/menuToText/cmd/web
-RUN go build
+ADD . /root/go/github.com/alyrot/uksh-menu-parser
+WORKDIR /root/go/github.com/alyrot/uksh-menu-parser
+RUN go build ./...
+RUN go test ./...
 
-ENTRYPOINT ["/usr/local/go/src/github.com/alyrot/menuToText/cmd/web/web"]
+
+ENTRYPOINT ["/root/go/github.com/alyrot/uksh-menu-parser/cmd/web/web"]
 
 EXPOSE 80
 EXPOSE 443
