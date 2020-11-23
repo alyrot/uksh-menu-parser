@@ -11,3 +11,4 @@ $MOCKGEN -source cmd/web/menuCache.go -destination mocks/cmd/web/menuCache.go -p
 
 mkdir -p mocks/pkg/parser
 $MOCKGEN -source pkg/parser/parser.go -destination mocks/pkg/parser/parser.go -package parserMock
+echo "Done generating mocks"
