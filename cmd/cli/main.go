@@ -6,7 +6,7 @@ import (
 	"io/ioutil"
 	"os"
 
-	"github.com/alyrot/menuToText/pkg/parser"
+	"github.com/alyrot/uksh-menu-parser/pkg/parser"
 )
 
 func main() {

@@ -10,7 +10,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/alyrot/menuToText/pkg/parser"
+	"github.com/alyrot/uksh-menu-parser/pkg/parser"
 )
 
 /*

@@ -3,10 +3,6 @@ FROM ubuntu:rolling
 ENV TZ=Europe/Berlin
 ENV ZONEINFO=/zoneinfo.zip
 
-#go specific env
-
-
-
 #app specific env
 ENV SERVER_LISTEN=:80
 
@@ -22,17 +18,15 @@ ENV GOPATH=/root/go/
 
 
 #build our app
-ADD . /usr/local/go/src/github.com/alyrot/menuToText
-WORKDIR /usr/local/go/src/github.com/alyrot/menuToText
-RUN ["go", "mod", "download"]
-#RUN ["go", "mod", "vendor"]
+ADD . /root/uksh-menu-parser
+WORKDIR /root/uksh-menu-parser
+RUN ["go", "build", "./..."]
 RUN ["go", "get", "github.com/golang/mock/mockgen@v1.4.4"]
 RUN ["./buildMock.sh"]
 RUN ["go", "test", "./..."]
-WORKDIR /usr/local/go/src/github.com/alyrot/menuToText/cmd/web
-RUN go build
 
-ENTRYPOINT ["/usr/local/go/src/github.com/alyrot/menuToText/cmd/web/web"]
+
+ENTRYPOINT ["/root/uksh-menu-parser/cmd/web/web"]
 
 EXPOSE 80
 EXPOSE 443

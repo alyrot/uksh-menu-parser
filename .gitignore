@@ -1,4 +1,4 @@
-testFiles/testOut
+testFiles/testOut/*
 /cmd/cli/cli
 /testFiles/planKW47.png
 mocks

@@ -8,11 +8,11 @@ import (
 	"testing"
 	"time"
 
-	parserMock "github.com/alyrot/menuToText/mocks/pkg/parser"
+	menuCacheMock "github.com/alyrot/uksh-menu-parser/mocks/cmd/web"
 
-	"github.com/alyrot/menuToText/pkg/parser"
+	parserMock "github.com/alyrot/uksh-menu-parser/mocks/pkg/parser"
 
-	menuCacheMock "github.com/alyrot/menuToText/mocks/cmd/web"
+	"github.com/alyrot/uksh-menu-parser/pkg/parser"
 
 	"github.com/golang/mock/gomock"
 )

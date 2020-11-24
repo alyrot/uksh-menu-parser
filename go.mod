@@ -1,4 +1,4 @@
-module github.com/alyrot/menuToText
+module github.com/alyrot/uksh-menu-parser
 
 go 1.15
 
