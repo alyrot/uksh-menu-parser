@@ -317,14 +317,6 @@ func hasIgnorePrefix(s string) bool {
 
 /*
 textToDish takes the output of pdftotext and parses it into dishes.
-Cannot obtain price information
-*/
-func textToDish(text []byte) ([]*Dish, error) {
-	return textToDishInYear(text, time.Now().In(time.Local).Year())
-}
-
-/*
-textToDish takes the output of pdftotext and parses it into dishes.
 The iso week is interpreted for year
 Cannot obtain price information
 */

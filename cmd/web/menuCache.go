@@ -27,11 +27,6 @@ func roundToDay(t time.Time) time.Time {
 	return time.Date(t.Year(), t.Month(), t.Day(), 0, 0, 0, 0, t.Location())
 }
 
-type MenuCacher interface {
-	GetMenu(date time.Time) ([]*parser.Dish, error)
-	Refresh() error
-}
-
 /*
 MenuCache is a cached Data Model for parser.Dish values served on a day
 */

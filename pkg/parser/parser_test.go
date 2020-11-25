@@ -31,7 +31,7 @@ func TestOCRImage(t *testing.T) {
 		t.Errorf("Expect OCR to contain \"line 1\" and \"line 2\" but got %v", text)
 	}
 
-	if text == fmt.Sprintf("line 1\nline2") {
+	if text == "line 1\nline2" {
 		t.Errorf("formatting not as expect\n")
 	}
 
