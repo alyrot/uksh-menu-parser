@@ -10,7 +10,7 @@ their content as json via an REST-API. The price of the meals sometimes glitches
 
 ## Endpoints
 - /alive : Just returns some dummy text and Status Code 200/OK. Can be used to monitor the availability of the service
-- /menu/yyy-mm-dd : Returns the menu for the given date as an json array
+- /menu/yyyy-mm-dd : Returns the menu for the given date as an json array
 ```
 [
   { Title : string
