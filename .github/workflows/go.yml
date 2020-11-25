@@ -41,12 +41,9 @@ jobs:
     - name: Build
       run: go build -v ./...
 
-    - name: Test
-      run: go test -v ./...
-      
-    - name: Calc coverage
+    - name: Test & Calc coverage
       run: |
-        go test -v -covermode=count -coverprofile=coverage.out
+        go test -v -covermode=count -coverprofile=coverage.out ./...
     - name: Convert coverage.out to coverage.lcov
       uses: jandelgado/gcov2lcov-action@v1.0.6
     - name: Coveralls
