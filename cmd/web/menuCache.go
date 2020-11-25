@@ -1,5 +1,7 @@
 package main
 
+//go:generate mockgen -source menuCache.go -destination ../../mocks/cmd/web/menuCache.go
+
 import (
 	"errors"
 	"fmt"
