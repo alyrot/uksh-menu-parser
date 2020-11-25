@@ -1,5 +1,7 @@
 ![Docker Image CI](https://github.com/alyrot/uksh-menu-parser/workflows/Docker%20Image%20CI/badge.svg)
 ![Go](https://github.com/alyrot/uksh-menu-parser/workflows/Go/badge.svg)
+[![Coverage Status](https://coveralls.io/repos/github/alyrot/uksh-menu-parser/badge.svg?branch=master)](https://coveralls.io/github/alyrot/uksh-menu-parser?branch=master)
+[![Go Report Card](https://goreportcard.com/badge/github.com/alyrot/uksh-menu-parser)](https://goreportcard.com/report/github.com/jalyrot/uksh-menu-parser) 
 
 # uksh-menu-parser
 The bistro of the UKSH Lübeck only publishes their lunch menu as a PDF on their [Website](https://www.uksh.de/servicesternnord/Unser+Speisenangebot/Speisepl%C3%A4ne+L%C3%BCbeck/UKSH_Bistro+L%C3%BCbeck-p-346.html).
