@@ -58,6 +58,4 @@ func (app *application) menuHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	return
-
 }
