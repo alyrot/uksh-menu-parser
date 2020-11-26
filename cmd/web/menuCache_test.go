@@ -20,26 +20,75 @@ import (
 func TestExtractLinks(t *testing.T) {
 
 	path := "../../testFiles/menuSite.html"
-	siteBytes, err := ioutil.ReadFile(path)
+	realisticSiteBytes, err := ioutil.ReadFile(path)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	expectedLinks := []string{
-		"https://www.uksh.de/uksh_media/Speisepl%C3%A4ne/L%C3%BCbeck+_+UKSH_Bistro/Speiseplan+Bistro+KW+47.pdf",
-		"https://www.uksh.de/uksh_media/Speisepl%C3%A4ne/L%C3%BCbeck+_+UKSH_Bistro/Speiseplan+Bistro+KW+48.pdf",
+	type testCase struct {
+		name          string
+		in            []byte
+		expectedLinks []string
+		shouldFail    bool
 	}
 
-	links, err := extractLinks(siteBytes)
-	if err != nil {
-		t.Errorf("Unexpected error: %v\n", err)
-	} else {
-		for i := range expectedLinks {
-			if expectedLinks[i] != links[i] {
-				t.Errorf("Expected %v got %v\n", expectedLinks[i], links[i])
-			}
-		}
+	//<a.+>Speiseplan Bistro.+<\/a>
+
+	tests := []*testCase{
+		{
+			name: "Realistic Site",
+			in:   realisticSiteBytes,
+			expectedLinks: []string{
+				"https://www.uksh.de/uksh_media/Speisepl%C3%A4ne/L%C3%BCbeck+_+UKSH_Bistro/Speiseplan+Bistro+KW+47.pdf",
+				"https://www.uksh.de/uksh_media/Speisepl%C3%A4ne/L%C3%BCbeck+_+UKSH_Bistro/Speiseplan+Bistro+KW+48.pdf",
+			},
+		},
+		{
+			name:          "No links",
+			in:            []byte("you shall find no links here"),
+			expectedLinks: nil,
+			shouldFail:    false,
+		},
+		{
+			name:          "Only one link",
+			in:            []byte(`<a href="/uksh_media/Speisepl%C3%A4ne/L%C3%BCbeck+_+UKSH_Bistro/Speiseplan+Bistro+KW+48.pdf" target="_blank">Speiseplan Bistro KW 48&nbsp;[pdf]</a>`),
+			expectedLinks: []string{"https://www.uksh.de/uksh_media/Speisepl%C3%A4ne/L%C3%BCbeck+_+UKSH_Bistro/Speiseplan+Bistro+KW+48.pdf"},
+		},
+		{
+			name: "Unusual many links",
+			in: []byte(
+				`<a href="/uksh_media/Speisepl%C3%A4ne/L%C3%BCbeck+_+UKSH_Bistro/Speiseplan+Bistro+KW+48.pdf" target="_blank">Speiseplan Bistro KW 48&nbsp;[pdf]</a>
+				<a href="/uksh_media/Speisepl%C3%A4ne/L%C3%BCbeck+_+UKSH_Bistro/Speiseplan+Bistro+KW+49.pdf" target="_blank">Speiseplan Bistro KW 49&nbsp;[pdf]</a>
+				<a href="/uksh_media/Speisepl%C3%A4ne/L%C3%BCbeck+_+UKSH_Bistro/Speiseplan+Bistro+KW+50.pdf" target="_blank">Speiseplan Bistro KW 50&nbsp;[pdf]</a>`),
+			expectedLinks: []string{"https://www.uksh.de/uksh_media/Speisepl%C3%A4ne/L%C3%BCbeck+_+UKSH_Bistro/Speiseplan+Bistro+KW+48.pdf",
+				"https://www.uksh.de/uksh_media/Speisepl%C3%A4ne/L%C3%BCbeck+_+UKSH_Bistro/Speiseplan+Bistro+KW+49.pdf",
+				"https://www.uksh.de/uksh_media/Speisepl%C3%A4ne/L%C3%BCbeck+_+UKSH_Bistro/Speiseplan+Bistro+KW+50.pdf"},
+		},
 	}
+
+	//<a href="/uksh_media/Speisepl%C3%A4ne/L%C3%BCbeck+_+UKSH_Bistro/Speiseplan+Bistro+KW+48.pdf" target="_blank">Speiseplan Bistro KW 48&nbsp;[pdf]</a>
+	for _, v := range tests {
+		func(tc *testCase) {
+			t.Run(tc.name, func(t *testing.T) {
+				got, err := extractLinks(tc.in)
+				if err != nil {
+					if !tc.shouldFail {
+						t.Errorf("Unexpected error: %v\n", err)
+					}
+				} else {
+					if tc.shouldFail {
+						t.Errorf("Did not encounter expected error\n")
+					}
+					for i := range tc.expectedLinks {
+						if tc.expectedLinks[i] != got[i] {
+							t.Errorf("Expected %v got %v\n", tc.expectedLinks[i], got[i])
+						}
+					}
+				}
+			})
+		}(v)
+	}
+
 }
 
 /*
@@ -48,7 +97,6 @@ returns [][]byte
 */
 func createDownloaderMock(ctrl *gomock.Controller) (*menuCacheMock.MockDownloader, [][]byte, error) {
 	//load dummy data for download mock
-	const menuBaseURL = "https://www.uksh.de/servicesternnord/Unser+Speisenangebot/Speisepl%C3%A4ne+L%C3%BCbeck/UKSH_Bistro+L%C3%BCbeck-p-346.html"
 	dummySite, err := ioutil.ReadFile("../../testFiles/menuSite.html")
 	if err != nil {
 		return nil, nil, err
@@ -65,7 +113,7 @@ func createDownloaderMock(ctrl *gomock.Controller) (*menuCacheMock.MockDownloade
 	}
 
 	downloadMock := menuCacheMock.NewMockDownloader(ctrl)
-	downloadMock.EXPECT().Get(menuBaseURL).Return(dummySite, nil)
+	downloadMock.EXPECT().Get(MenuBaseURL).Return(dummySite, nil)
 	downloadMock.EXPECT().Get(pdf1URL).Return(dummyPDF1, nil)
 	downloadMock.EXPECT().Get(pdf2URL).Return(dummyPDF2, nil)
 
@@ -75,21 +123,67 @@ func createDownloaderMock(ctrl *gomock.Controller) (*menuCacheMock.MockDownloade
 func TestExtractPDFsFromMenuSite(t *testing.T) {
 	ctrl := gomock.NewController(t)
 
-	downloadMock, expRes, err := createDownloaderMock(ctrl)
+	realisticIn, realisticExp, err := createDownloaderMock(ctrl)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	resultPDFs, err := extractPDFsFromMenuSite(downloadMock)
-	if err != nil {
-		t.Errorf("Unexpected Error: %v\n", err)
-	}
-	if l := len(resultPDFs); l != 2 {
-		t.Errorf("Expected 2 PDFs got %v\n", l)
+	type testCase struct {
+		name       string
+		in         *menuCacheMock.MockDownloader
+		exp        [][]byte
+		shouldFail bool
 	}
 
-	if !reflect.DeepEqual(resultPDFs, expRes) {
-		t.Errorf("Wrong PDFs returned\n")
+	threeDummyPDF := [][]byte{[]byte("dummy 1"), []byte("dummy 2"), []byte("dummy 3")}
+
+	tests := []*testCase{
+		{
+			name:       "Realistic site",
+			in:         realisticIn,
+			exp:        realisticExp,
+			shouldFail: false,
+		},
+		{
+			name: "Unusual amount of links",
+			in: func() *menuCacheMock.MockDownloader {
+				d := menuCacheMock.NewMockDownloader(ctrl)
+				d.EXPECT().Get(MenuBaseURL).Return([]byte(
+					`<a href="/uksh_media/Speisepl%C3%A4ne/L%C3%BCbeck+_+UKSH_Bistro/Speiseplan+Bistro+KW+48.pdf" target="_blank">Speiseplan Bistro KW 48&nbsp;[pdf]</a>
+				<a href="/uksh_media/Speisepl%C3%A4ne/L%C3%BCbeck+_+UKSH_Bistro/Speiseplan+Bistro+KW+49.pdf" target="_blank">Speiseplan Bistro KW 49&nbsp;[pdf]</a>
+				<a href="/uksh_media/Speisepl%C3%A4ne/L%C3%BCbeck+_+UKSH_Bistro/Speiseplan+Bistro+KW+50.pdf" target="_blank">Speiseplan Bistro KW 50&nbsp;[pdf]</a>`), nil)
+				d.EXPECT().Get("https://www.uksh.de/uksh_media/Speisepl%C3%A4ne/L%C3%BCbeck+_+UKSH_Bistro/Speiseplan+Bistro+KW+48.pdf").Return(threeDummyPDF[0], nil)
+				d.EXPECT().Get("https://www.uksh.de/uksh_media/Speisepl%C3%A4ne/L%C3%BCbeck+_+UKSH_Bistro/Speiseplan+Bistro+KW+49.pdf").Return(threeDummyPDF[1], nil)
+				d.EXPECT().Get("https://www.uksh.de/uksh_media/Speisepl%C3%A4ne/L%C3%BCbeck+_+UKSH_Bistro/Speiseplan+Bistro+KW+50.pdf").Return(threeDummyPDF[2], nil)
+				return d
+			}(),
+			exp:        threeDummyPDF,
+			shouldFail: false,
+		},
+	}
+
+	for _, v := range tests {
+		func(tc *testCase) {
+			t.Run(tc.name, func(t *testing.T) {
+
+				got, err := extractPDFsFromMenuSite(tc.in)
+				if err != nil {
+					if !tc.shouldFail {
+						t.Errorf("Unexpected Error: %v\n", err)
+					}
+				} else if tc.shouldFail {
+					t.Errorf("Expected error got none\n")
+				}
+
+				if l := len(got); l != len(tc.exp) {
+					t.Errorf("Expected %v PDFs got %v\n", len(tc.exp), l)
+				}
+
+				if !reflect.DeepEqual(got, tc.exp) {
+					t.Errorf("Wrong PDFs returned\n")
+				}
+			})
+		}(v)
 	}
 }
 
