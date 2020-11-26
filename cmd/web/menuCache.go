@@ -15,6 +15,8 @@ import (
 	"github.com/alyrot/uksh-menu-parser/pkg/parser"
 )
 
+const MenuBaseURL = "https://www.uksh.de/servicesternnord/Unser+Speisenangebot/Speisepl%C3%A4ne+L%C3%BCbeck/UKSH_Bistro+L%C3%BCbeck-p-346.html"
+
 /*
 invDateError is returned when MenuCache deems a date to far in the future or to far in the past
 */
@@ -68,6 +70,12 @@ func (mc *MenuCache) Refresh() error {
 	pdfs, err := extractPDFsFromMenuSite(mc.download)
 	if err != nil {
 		return err
+	}
+
+	if len(pdfs) == 0 {
+		mc.infoLog.Printf("Did not find any PDFs")
+	} else if len(pdfs) > 2 {
+		mc.infoLog.Printf("Got %v PDFs, unusual high amount", len(pdfs))
 	}
 
 	//clear cache
@@ -160,9 +168,6 @@ func extractLinks(site []byte) ([]string, error) {
 	linkFromHref := regexp.MustCompile(`\/.+\.pdf`)
 
 	menuHREFs := hrefRegexp.FindAll(site, -1)
-	if menuHREFs == nil {
-		return nil, fmt.Errorf("exractLinks: menuHandler href regexp found no matches\n")
-	}
 
 	links := make([]string, 0, len(menuHREFs))
 	for i := range menuHREFs {
@@ -181,18 +186,13 @@ func extractLinks(site []byte) ([]string, error) {
 extractPDFsFromMenuSite, downloads the lunch menuHandler PDFs from the UKSH website
 */
 func extractPDFsFromMenuSite(d Downloader) ([][]byte, error) {
-	const menuBaseURL = "https://www.uksh.de/servicesternnord/Unser+Speisenangebot/Speisepl%C3%A4ne+L%C3%BCbeck/UKSH_Bistro+L%C3%BCbeck-p-346.html"
-	site, err := d.Get(menuBaseURL)
+	site, err := d.Get(MenuBaseURL)
 	if err != nil {
 		return nil, fmt.Errorf("extractPDFsFromMenuSite: failed to fetch site: %v", err)
 	}
 	links, err := extractLinks(site)
 	if err != nil {
 		return nil, fmt.Errorf("extractPDFsFromMenuSite: failed to extract links: %v", err)
-	}
-
-	if l := len(links); l > 2 {
-		return nil, fmt.Errorf("extractPDFsFromMenuSite: expected 2 links, got %v", l)
 	}
 
 	pdfs := make([][]byte, 0, len(links))
