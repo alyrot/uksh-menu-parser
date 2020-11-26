@@ -52,3 +52,11 @@ jobs:
           github-token: ${{ secrets.github_token }}
           path-to-lcov: coverage.lcov
 
+    - uses: actions/checkout@master
+    - name: Publish to Registry
+      uses: elgohr/Publish-Docker-Github-Action@master
+      with:
+        name: alyrot/uksh-menu-parser
+        username: ${{ github.actor }}
+        password: ${{ secrets.docker }}
+        registry:  docker.pkg.github.com
