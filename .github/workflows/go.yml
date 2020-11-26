@@ -58,5 +58,5 @@ jobs:
       with:
         name: alyrot/uksh-menu-parser
         username: ${{ github.actor }}
-        password: ${{ secrets.docker }}
-        registry:  docker.pkg.github.com
+        password: ${{ secrets.DOCKER }}
+        registry:  	ghcr.io
