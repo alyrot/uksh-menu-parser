@@ -23,10 +23,11 @@ ENV PATH="${PATH}:/usr/local/go/bin:$GOPATH/bin"
 ADD . /root/go/github.com/alyrot/uksh-menu-parser
 WORKDIR /root/go/github.com/alyrot/uksh-menu-parser
 RUN go build ./...
+RUN go build ./cmd/web
 RUN go test ./...
 
 
-ENTRYPOINT ["/root/go/github.com/alyrot/uksh-menu-parser/cmd/web/web"]
+ENTRYPOINT ["/root/go/github.com/alyrot/uksh-menu-parser/web"]
 
 EXPOSE 80
 EXPOSE 443
