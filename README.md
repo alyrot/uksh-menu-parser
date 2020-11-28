@@ -8,9 +8,18 @@ The bistro of the UKSH Lübeck only publishes their lunch menu as a PDF on their
 This project automatically downloads the lunch plan pdfs and offers
 their content as json via an REST-API. The price of the meals sometimes glitches a bit as it is extracted via OCR.
 
+## Configurations
+The following environment variables can be used for configuring the services.
+- SERVER_LISTEN : configures address(es) and port where the server should listen.
+E.g. use ```:80 ``` to listen on port 80 on all addresses.
+- USE_SSL : If set to ```true``` the server uses https. Set the path to the certificate
+and private key file in the environment variables ``` SSL_CERT_PATH``` and
+```SSL_PRIVKEY_PATH```.
+
+
 ## Endpoints
-- /alive : Just returns some dummy text and Status Code 200/OK. Can be used to monitor the availability of the service
-- /menu/yyyy-mm-dd : Returns the menu for the given date as an json array
+- /alive : Just returns some dummy text and Status Code 200/OK. Can be used to monitor the availability of the service.
+- /menu/yyyy-mm-dd : Returns the menu for the given date as a json array.
 ```
 [
   { Title : string
