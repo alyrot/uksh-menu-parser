@@ -3,9 +3,6 @@ FROM ubuntu:rolling
 ENV TZ=Europe/Berlin
 ENV ZONEINFO=/zoneinfo.zip
 
-#app specific env
-ENV SERVER_LISTEN=:80
-
 #our app uses these cli utilities
 RUN apt-get update && apt-get install -y tesseract-ocr tesseract-ocr-deu poppler-utils ca-certificates wget build-essential git
 
@@ -29,5 +26,3 @@ RUN go test ./...
 
 ENTRYPOINT ["/root/go/github.com/alyrot/uksh-menu-parser/web"]
 
-EXPOSE 80
-EXPOSE 443
